@@ -23,28 +23,31 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
 
-      - name: Setup Android SDK
-        uses: android-actions/setup-android@v3
+      # 1. نقل ملفات الموقع (index.html والملفات المجاورة) إلى مجلد www
+      - name: Prepare Web Assets
+        run: |
+          mkdir -p www
+          cp -r ./index.html www/ 2>/dev/null || true
+          cp -r ./code.js www/ 2>/dev/null || true
 
-      # نثبّت Capacitor 6 لأنه يتوافق مع Java 17
-      - name: Install Capacitor
+      # 2. تثبيت Capacitor وإضافة منصة أندرويد
+      - name: Install Capacitor & Setup Android
         run: |
           npm init -y
           npm install @capacitor/core@6 @capacitor/cli@6 @capacitor/android@6
-
-      # ملفات التطبيق موجودة في مجلد www
-      - name: Create Android project
-        run: |
           npx cap init "Al-Yaqout" com.yaqout.center --web-dir www
           npx cap add android
           npx cap sync android
 
+      # 3. قبول تراخيص Android SDK وبناء ملف APK
       - name: Build Debug APK
         working-directory: ./android
         run: |
+          yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses || true
           chmod +x gradlew
           ./gradlew assembleDebug --no-daemon
 
+      # 4. رفع ملف الـ APK الجاهز للتنزيل
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
