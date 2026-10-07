@@ -9,231 +9,352 @@
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
 
+    <link
+      href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;800&display=swap"
+      rel="stylesheet"
+    />
     <style>
       :root {
         --primary: #003366;
         --primary-dark: #002244;
         --accent: #d4af37;
         --accent-light: #fef3c7;
-        --bg: #f8fafc;
-        --card-bg: #ffffff;
+        --bg: #f1f5f9;
+        --card-bg: #fff;
         --text: #1e293b;
         --text-muted: #64748b;
         --success: #059669;
         --danger: #dc2626;
         --border: #e2e8f0;
       }
-
+      * {
+        -webkit-tap-highlight-color: transparent;
+      }
       body {
         margin: 0;
-        font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        font-family:
+          Cairo,
+          system-ui,
+          -apple-system,
+          "Segoe UI",
+          Roboto,
+          sans-serif;
         background: var(--bg);
         color: var(--text);
         direction: rtl;
+        padding-bottom: calc(80px + env(safe-area-inset-bottom));
       }
-
       header {
-        background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+        background: linear-gradient(
+          135deg,
+          var(--primary),
+          var(--primary-dark)
+        );
         color: #fff;
-        text-align: center;
-        padding: 12px 8px 8px;
-        border-bottom: 4px solid var(--accent);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+        padding: 10px 14px;
+        padding-top: calc(10px + env(safe-area-inset-top));
+        border-bottom: 3px solid var(--accent);
         position: sticky;
         top: 0;
         z-index: 99;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
       }
-
       h1 {
-        font-size: 18px;
-        margin: 2px 0;
+        font-size: 16px;
+        margin: 0;
         font-weight: 800;
-        letter-spacing: -0.3px;
       }
-
       .month-badge {
-        display: inline-block;
         background: rgba(255, 255, 255, 0.15);
         color: var(--accent);
-        padding: 2px 10px;
+        padding: 3px 10px;
         border-radius: 12px;
         font-size: 11px;
-        font-weight: bold;
-        margin-top: 2px;
+        font-weight: 700;
       }
-
+      #st {
+        font-size: 11px;
+        white-space: nowrap;
+      }
       nav {
-        display: flex;
-        gap: 6px;
-        margin-top: 10px;
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
         max-width: 600px;
         margin-inline: auto;
+        z-index: 100;
+        display: flex;
+        gap: 2px;
+        background: #fff;
+        border-top: 1px solid var(--border);
+        border-radius: 18px 18px 0 0;
+        padding: 6px 6px calc(6px + env(safe-area-inset-bottom));
+        box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.08);
       }
-
       nav button {
         flex: 1;
-        padding: 10px 4px;
         border: 0;
-        border-radius: 8px;
-        font-size: 12px;
-        font-weight: bold;
-        background: rgba(255, 255, 255, 0.12);
-        color: #fff;
+        background: none;
+        color: var(--text-muted);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 2px;
+        padding: 6px 2px;
+        border-radius: 12px;
+        font: inherit;
+        font-size: 11px;
+        font-weight: 700;
         cursor: pointer;
-        transition: all 0.2s ease;
+        transition: 0.2s;
       }
-
+      nav button b {
+        font-size: 20px;
+        line-height: 1;
+      }
       nav button.on {
-        background: var(--accent);
-        color: var(--primary-dark);
-        box-shadow: 0 2px 8px rgba(212, 175, 55, 0.4);
+        color: var(--primary);
+        background: var(--accent-light);
       }
-
       main {
-        padding: 14px 10px;
+        padding: 14px 12px;
         max-width: 600px;
         margin: auto;
       }
-
+      @keyframes in {
+        from {
+          opacity: 0;
+          transform: translateY(6px);
+        }
+      }
       .c {
         background: var(--card-bg);
-        border-radius: 14px;
+        border-radius: 16px;
         padding: 14px;
         margin-bottom: 12px;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+        box-shadow:
+          0 1px 3px rgba(15, 23, 42, 0.06),
+          0 4px 14px rgba(15, 23, 42, 0.04);
         border: 1px solid var(--border);
-        font-size: 13px;
+        font-size: 14px;
         line-height: 1.8;
+        animation: in 0.2s ease;
       }
-
+      label {
+        display: block;
+      }
       .i {
         width: 100%;
         box-sizing: border-box;
+        min-height: 44px;
         border: 1px solid var(--border);
-        border-radius: 8px;
-        padding: 10px;
+        border-radius: 10px;
+        padding: 10px 12px;
         margin: 4px 0 10px;
-        font-size: 13px;
+        font: inherit;
+        font-size: 15px;
         background: #fff;
         color: var(--text);
         outline: none;
-        transition: border 0.2s;
+        transition: 0.2s;
       }
-
       .i:focus {
         border-color: var(--primary);
+        box-shadow: 0 0 0 3px rgba(0, 51, 102, 0.12);
       }
-
       .b {
         background: var(--primary);
         color: #fff;
         border: 0;
-        border-radius: 8px;
+        border-radius: 12px;
+        min-height: 44px;
         padding: 10px 16px;
-        font-weight: bold;
+        font: inherit;
+        font-weight: 700;
         cursor: pointer;
-        transition: opacity 0.2s;
+        transition: 0.15s;
         width: 100%;
       }
-
-      .b:hover {
-        opacity: 0.92;
+      .b:active {
+        transform: scale(0.97);
       }
-
       .s {
         width: auto;
-        padding: 6px 12px;
+        min-height: 36px;
+        padding: 6px 14px;
         font-size: 12px;
-        margin-inline-end: 4px;
+        margin: 4px 0 0;
+        margin-inline-end: 6px;
+        background: #e0e7ff;
+        color: var(--primary);
       }
-
       .g {
         background: var(--success);
+        color: #fff;
       }
-
-      .r {
+      .s.r {
+        background: #fee2e2;
+        color: #b91c1c;
+      }
+      .b.r {
         background: var(--danger);
+        color: #fff;
       }
-
+      .s.r {
+        color: #b91c1c;
+      }
       .row {
         display: flex;
         gap: 8px;
       }
-
       .row > * {
         flex: 1;
       }
-
       small {
         color: var(--text-muted);
       }
-
       .k {
-        font-weight: bold;
+        font-weight: 700;
         color: var(--primary);
       }
-
+      #ls:empty::before {
+        content: "لا توجد نتائج";
+        display: block;
+        text-align: center;
+        color: #94a3b8;
+        padding: 30px;
+      }
       .badge-note {
         background: var(--accent-light);
         color: #92400e;
         padding: 4px 8px;
-        border-radius: 6px;
+        border-radius: 8px;
         font-size: 12px;
         margin: 6px 0;
         display: block;
       }
-
       .pay-history {
         background: #f8fafc;
         border: 1px dashed var(--border);
-        border-radius: 8px;
+        border-radius: 10px;
         padding: 10px;
         margin-top: 8px;
       }
-
       .pay-item {
         display: flex;
         justify-content: space-between;
         align-items: center;
+        gap: 6px;
         border-bottom: 1px solid var(--border);
         padding: 6px 0;
       }
-
       .pay-item:last-child {
-        border-bottom: 0;
+        border: 0;
       }
-
-      .method-tag {
+      .method-tag,
+      .time-badge {
         background: #e0f2fe;
         color: #0369a1;
-        padding: 2px 6px;
-        border-radius: 4px;
+        padding: 2px 8px;
+        border-radius: 6px;
         font-size: 11px;
-        font-weight: bold;
+        font-weight: 700;
       }
-
-      .time-badge {
-        background: #f1f5f9;
-        color: var(--primary);
-        padding: 2px 6px;
-        border-radius: 4px;
+      .g2 {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+        margin: 10px 0;
+      }
+      .t {
+        background: #f8fafc;
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 8px 10px;
+      }
+      .t small {
+        display: block;
         font-size: 11px;
-        font-weight: bold;
-        border: 1px solid #cbd5e1;
+      }
+      .t b {
+        font-size: 17px;
+      }
+      .net {
+        border-radius: 12px;
+        padding: 10px 14px;
+        color: #fff;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+      .net small {
+        color: #fff;
+        opacity: 0.85;
+      }
+      .net b {
+        font-size: 20px;
+      }
+      #md > .c {
+        position: absolute !important;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        margin: 0 !important;
+        max-width: none !important;
+        max-height: 88vh;
+        overflow: auto;
+        border-radius: 22px 22px 0 0;
+        padding-bottom: calc(16px + env(safe-area-inset-bottom));
+        animation: in 0.25s;
+      }
+      #tt {
+        position: fixed;
+        top: calc(12px + env(safe-area-inset-top));
+        left: 50%;
+        transform: translateX(-50%);
+        background: #0f172a;
+        color: #fff;
+        padding: 10px 18px;
+        border-radius: 24px;
+        font-size: 13px;
+        z-index: 9999;
+        max-width: 90%;
+        text-align: center;
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.25s;
+      }
+      #tt.on {
+        opacity: 1;
       }
     </style>
   </head>
   <body>
     <header>
-      <h1>💎 مركز الياقوت التعليمي</h1>
+      <h1>💎 مركز الياقوت</h1>
       <div id="monthDisplay" class="month-badge"></div>
-      <div id="st" style="font-size: 11px; color: #4ade80; margin-top: 3px">⚡ مزامنة فورية وأوفلاين متفاعلة</div>
-      <nav id="nv"></nav>
+      <div id="st"></div>
     </header>
 
     <main id="v"></main>
+    <nav id="nv"></nav>
 
-    <div id="md" style="display: none; position: fixed; inset: 0; background: rgba(0, 0, 0, 0.6); z-index: 999; backdrop-filter: blur(2px)"></div>
+    <div id="tt"></div>
+    <div
+      id="md"
+      style="
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.6);
+        z-index: 999;
+        backdrop-filter: blur(2px);
+      "
+    ></div>
 
     <script>
       // مفاتيح مشروعك الخاصة alyaqout-f6e54
@@ -244,7 +365,7 @@
         storageBucket: "alyaqout-f6e54.firebasestorage.app",
         messagingSenderId: "959781323114",
         appId: "1:959781323114:web:9fb25080f28460d05fe513",
-        measurementId: "G-X58SGMVMSP"
+        measurementId: "G-X58SGMVMSP",
       };
 
       // تهيئة اتصال Firebase مع تفعيل العمل بدون إنترنت (Offline Sync)
@@ -253,7 +374,17 @@
       fs.enablePersistence({ synchronizeTabs: true }).catch(() => {});
 
       const G = [...Array(12)].map((_, i) => "الصف " + (i + 1));
-      const D = ["سبت,اثنين,اربعاء", "أحد,ثلاثاء,خميس", "السبت", "الأحد", "الاثنين", "الثلاثاء", "الأربعاء", "الخميس", "الجمعة"];
+      const D = [
+        "سبت,اثنين,اربعاء",
+        "أحد,ثلاثاء,خميس",
+        "السبت",
+        "الأحد",
+        "الاثنين",
+        "الثلاثاء",
+        "الأربعاء",
+        "الخميس",
+        "الجمعة",
+      ];
 
       const TABS = [
         ["st", "👨‍🎓 الطلاب"],
@@ -264,14 +395,34 @@
       ];
 
       let tab = "st",
-        db = { teachers: [], students: [], payments: [], schedule: [], expenses: [], attendance: [], settings: [] };
+        db = {
+          teachers: [],
+          students: [],
+          payments: [],
+          schedule: [],
+          expenses: [],
+          attendance: [],
+          settings: [],
+        };
 
       // عرض الشهر والسنة الحاليين
-      const currentMonthText = new Date().toLocaleDateString('ar-EG', { month: 'long', year: 'numeric' });
-      document.getElementById("monthDisplay").textContent = "📅 " + currentMonthText;
+      const currentMonthText = new Date().toLocaleDateString("ar-EG", {
+        month: "long",
+        year: "numeric",
+      });
+      document.getElementById("monthDisplay").textContent =
+        "📅 " + currentMonthText;
 
       // استماع لحظي ومباشر للبيانات بدون Refresh
-      const collections = ["teachers", "students", "payments", "schedule", "expenses", "attendance", "settings"];
+      const collections = [
+        "teachers",
+        "students",
+        "payments",
+        "schedule",
+        "expenses",
+        "attendance",
+        "settings",
+      ];
       collections.forEach((col) => {
         fs.collection(col).onSnapshot((snapshot) => {
           db[col] = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
@@ -280,8 +431,13 @@
       });
 
       const N = (v) => Number(v) || 0,
-        E = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => "&#" + c.charCodeAt(0) + ";"),
-        uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 5),
+        E = (s) =>
+          String(s ?? "").replace(
+            /[&<>"']/g,
+            (c) => "&#" + c.charCodeAt(0) + ";",
+          ),
+        uid = () =>
+          Date.now().toString(36) + Math.random().toString(36).slice(2, 5),
         today = () => new Date().toISOString().slice(0, 10);
 
       // تنظيف وتوحيد النصوص لتجاهل الأخطاء الإملائية
@@ -313,15 +469,29 @@
       }
 
       const sum = (a) => a.reduce((x, p) => x + N(p.amount), 0);
-      const S = (k) => { const r = db.settings.find((x) => x.id == k); return r ? N(r.value) : 0; };
+      const S = (k) => {
+        const r = db.settings.find((x) => x.id == k);
+        return r ? N(r.value) : 0;
+      };
       const P = (g) => S("p" + g);
-      const pct = () => (db.settings.some((x) => x.id == "pct") ? S("pct") : 60);
-      const durationMins = () => (db.settings.some((x) => x.id == "duration") ? S("duration") : 60);
+      const pct = () =>
+        db.settings.some((x) => x.id == "pct") ? S("pct") : 60;
+      const durationMins = () =>
+        db.settings.some((x) => x.id == "duration") ? S("duration") : 60;
 
-      const tn = (id) => (db.teachers.find((t) => t.id == id) || {}).name || "—";
-      const TO = (s) => db.teachers.map((t) => `<option value="${t.id}"${t.id == s ? " selected" : ""}>${E(t.name)}</option>`).join("");
-      const paidS = (id) => sum(db.payments.filter((p) => p.type == "student" && p.refId == id));
-      const studentPayments = (id) => db.payments.filter((p) => p.type == "student" && p.refId == id);
+      const tn = (id) =>
+        (db.teachers.find((t) => t.id == id) || {}).name || "—";
+      const TO = (s) =>
+        db.teachers
+          .map(
+            (t) =>
+              `<option value="${t.id}"${t.id == s ? " selected" : ""}>${E(t.name)}</option>`,
+          )
+          .join("");
+      const paidS = (id) =>
+        sum(db.payments.filter((p) => p.type == "student" && p.refId == id));
+      const studentPayments = (id) =>
+        db.payments.filter((p) => p.type == "student" && p.refId == id);
 
       function calcEndTime(st, mins) {
         if (!st) return "";
@@ -332,12 +502,20 @@
       }
 
       function tStat(t) {
-        const ids = db.students.filter((s) => s.teacherId == t.id).map((s) => s.id);
-        const inc = sum(db.payments.filter((p) => p.type == "student" && ids.includes(p.refId)));
+        const ids = db.students
+          .filter((s) => s.teacherId == t.id)
+          .map((s) => s.id);
+        const inc = sum(
+          db.payments.filter(
+            (p) => p.type == "student" && ids.includes(p.refId),
+          ),
+        );
         return {
           ids,
           due: (inc * pct()) / 100,
-          paid: sum(db.payments.filter((p) => p.type == "teacher" && p.refId == t.id)),
+          paid: sum(
+            db.payments.filter((p) => p.type == "teacher" && p.refId == t.id),
+          ),
         };
       }
 
@@ -368,35 +546,74 @@
 
         if (conflict) {
           const conflictTeacher = tn(conflict.teacherId);
-          alert(`⚠️ تعارض أوقات: توجد حصة أخرى لحساب (${conflictTeacher}) في نفس اليوم والوقت (${format12h(conflict.startTime)} - ${format12h(calcEndTime(conflict.startTime, dur))})! اختر وقتاً آخر.`);
+          alert(
+            `⚠️ تعارض أوقات: توجد حصة أخرى لحساب (${conflictTeacher}) في نفس اليوم والوقت (${format12h(conflict.startTime)} - ${format12h(calcEndTime(conflict.startTime, dur))})! اختر وقتاً آخر.`,
+          );
           return false;
         }
 
-        op("schedule", { id: uid(), teacherId: f.t.value, grade: f.g.value, day: daySel, startTime: f.tm.value, note: f.nt.value });
+        op("schedule", {
+          id: uid(),
+          teacherId: f.t.value,
+          grade: f.g.value,
+          day: daySel,
+          startTime: f.tm.value,
+          note: f.nt.value,
+        });
         return false;
       }
 
       function addExpense(f) {
-        op("expenses", { id: uid(), date: f.dt.value || today(), title: f.tl.value.trim(), amount: N(f.am.value), category: f.cat.value, note: f.nt.value.trim() });
+        op("expenses", {
+          id: uid(),
+          date: f.dt.value || today(),
+          title: f.tl.value.trim(),
+          amount: N(f.am.value),
+          category: f.cat.value,
+          note: f.nt.value.trim(),
+        });
         return false;
       }
 
       function saveSet(f) {
-        const p = Math.min(100, Math.max(0, N(f.pct.value))), dur = Math.max(15, N(f.duration.value));
-        const v = [["pct", p], ["duration", dur]];
+        const p = Math.min(100, Math.max(0, N(f.pct.value))),
+          dur = Math.max(15, N(f.duration.value));
+        const v = [
+          ["pct", p],
+          ["duration", dur],
+        ];
         for (let i = 1; i <= 12; i++) v.push(["p" + i, N(f["p" + i].value)]);
         v.forEach((x) => op("settings", { id: x[0], value: x[1] }));
         alert("تم حفظ الإعدادات بنجاح");
         return false;
       }
 
-      let qs = "", pq = "", pFilter = "all", eS = "", eT = "", mo = today().slice(0, 7), RT = "";
+      let qs = "",
+        pq = "",
+        pFilter = "all",
+        eS = "",
+        eT = "",
+        mo = today().slice(0, 7),
+        RT = "";
 
-      const ER = (v, k) => `<button type=button class="b s r" onclick="${k}='';render()">إلغاء</button>`;
+      const ER = (v, k) =>
+        `<button type=button class="b s r" onclick="${k}='';render()">إلغاء</button>`;
 
-      const SL = () => db.students.filter((s) => (cleanText(s.name) + cleanText(s.parent) + cleanText(s.note) + cleanText(s.track)).includes(cleanText(qs))).reverse().map((s) => {
-        const p = paidS(s.id), r = N(s.price) - p;
-        return `<div class=c>
+      const SL = () =>
+        db.students
+          .filter((s) =>
+            (
+              cleanText(s.name) +
+              cleanText(s.parent) +
+              cleanText(s.note) +
+              cleanText(s.track)
+            ).includes(cleanText(qs)),
+          )
+          .reverse()
+          .map((s) => {
+            const p = paidS(s.id),
+              r = N(s.price) - p;
+            return `<div class=c>
           <span class=k style="font-size:15px">${E(s.name)}</span> <small>${G[(s.grade || 1) - 1] || ""} · <span class="method-tag">${E(s.track)}</span> · المعلم: <b>${E(tn(s.teacherId))}</b></small> ${s.parent ? `<a href="tel:${E(s.parent)}" style="text-decoration:none">📞</a>` : ""}
           <br>السعر: <b>${N(s.price)} ₪</b> | مدفوع: ${p} ₪ | <b style="color:${r > 0 ? "#dc2626" : "#059669"}">متبقي: ${r} ₪</b>
           ${s.note ? `<div class="badge-note">📝 ملاحظة: ${E(s.note)}</div>` : ""}
@@ -406,17 +623,24 @@
             <button class="b s r" onclick="del('students','${s.id}')">حذف</button>
           </div>
         </div>`;
-      }).join("");
+          })
+          .join("");
 
-      const TL = () => db.teachers.filter((t) => (cleanText(t.name) + cleanText(t.subject)).includes(cleanText(qs))).map((t) => {
-        const x = tStat(t);
-        return `<div class=c>
+      const TL = () =>
+        db.teachers
+          .filter((t) =>
+            (cleanText(t.name) + cleanText(t.subject)).includes(cleanText(qs)),
+          )
+          .map((t) => {
+            const x = tStat(t);
+            return `<div class=c>
           <span class=k style="font-size:15px">${E(t.name)}</span> <small>(${E(t.subject)}) ${E(t.phone)} ${t.startDate ? `(تاريخ البدء: ${t.startDate})` : ""}</small>
           <br>الطلاب (${x.ids.length}): <small>${x.ids.map((i) => E((db.students.find((s) => s.id == i) || {}).name)).join("، ") || "—"}</small>
           <br>المستحق: ${x.due.toFixed(0)} ₪ | المصروف: ${x.paid} ₪ | <b>الرصيد: ${(x.due - x.paid).toFixed(0)} ₪</b>
           <br style="margin-top:6px"><button class="b s g" onclick="payModal('teacher','${t.id}')">+ صرف</button><button class="b s" onclick="eT='${t.id}';scrollTo(0,0);render()">تعديل</button><button class="b s r" onclick="del('teachers','${t.id}')">حذف</button>
         </div>`;
-      }).join("");
+          })
+          .join("");
 
       function payModal(type, ref) {
         md.style.display = "block";
@@ -446,7 +670,15 @@
         const a = N(f.am.value);
         if (a > 0) {
           const id = uid();
-          op("payments", { id, date: today(), type, refId: ref, amount: a, method: f.mth.value, note: f.nt.value.trim() });
+          op("payments", {
+            id,
+            date: today(),
+            type,
+            refId: ref,
+            amount: a,
+            method: f.mth.value,
+            note: f.nt.value.trim(),
+          });
           md.style.display = "none";
           if (type == "student") rc(id);
         }
@@ -456,20 +688,31 @@
       function openAttendance(schId) {
         const sch = db.schedule.find((s) => s.id == schId);
         if (!sch) return;
-        const students = db.students.filter((s) => s.teacherId == sch.teacherId && s.grade == sch.grade);
+        const students = db.students.filter(
+          (s) => s.teacherId == sch.teacherId && s.grade == sch.grade,
+        );
         const attDate = today();
 
-        const rowsHtml = students.length ? students.map((s) => {
-          const rec = db.attendance.find((a) => a.scheduleId == schId && a.studentId == s.id && a.date == attDate);
-          const st = rec ? rec.status : "حاضر";
-          return `<div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid #eee">
+        const rowsHtml = students.length
+          ? students
+              .map((s) => {
+                const rec = db.attendance.find(
+                  (a) =>
+                    a.scheduleId == schId &&
+                    a.studentId == s.id &&
+                    a.date == attDate,
+                );
+                const st = rec ? rec.status : "حاضر";
+                return `<div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid #eee">
             <span>${E(s.name)}</span>
             <select id="att_${s.id}" class=i style="width:100px;margin:0">
               <option value="حاضر"${st == "حاضر" ? " selected" : ""}>🟢 حاضر</option>
               <option value="غائب"${st == "غائب" ? " selected" : ""}>🔴 غائب</option>
             </select>
           </div>`;
-        }).join("") : `<div style="color:#64748b;padding:10px 0">لا يوجد طلاب مسجلين لهذه المادة للصف المحدد</div>`;
+              })
+              .join("")
+          : `<div style="color:#64748b;padding:10px 0">لا يوجد طلاب مسجلين لهذه المادة للصف المحدد</div>`;
 
         md.style.display = "block";
         md.innerHTML = `<div class=c style="max-width:380px;margin:40px auto">
@@ -483,11 +726,22 @@
 
       function saveAtt(schId, date) {
         const sch = db.schedule.find((s) => s.id == schId);
-        const students = db.students.filter((s) => s.teacherId == sch.teacherId && s.grade == sch.grade);
+        const students = db.students.filter(
+          (s) => s.teacherId == sch.teacherId && s.grade == sch.grade,
+        );
         students.forEach((s) => {
           const val = document.getElementById("att_" + s.id).value;
-          const ex = db.attendance.find((a) => a.scheduleId == schId && a.studentId == s.id && a.date == date);
-          op("attendance", { id: ex ? ex.id : uid(), date, scheduleId: schId, studentId: s.id, status: val });
+          const ex = db.attendance.find(
+            (a) =>
+              a.scheduleId == schId && a.studentId == s.id && a.date == date,
+          );
+          op("attendance", {
+            id: ex ? ex.id : uid(),
+            date,
+            scheduleId: schId,
+            studentId: s.id,
+            status: val,
+          });
         });
         alert("تم حفظ كشف الحضور بنجاح");
         md.style.display = "none";
@@ -540,23 +794,32 @@ ${p.note ? `ملاحظة الدفعة: ${p.note}\n` : ""}إجمالي المدف
           grossCenter = iS - td,
           netCenter = grossCenter - mExp;
 
-        const tr = db.teachers.map((t) => {
-          const ids = db.students.filter((s) => s.teacherId == t.id).map((s) => s.id),
-            i = sum(m.filter((p) => p.type == "student" && ids.includes(p.refId))),
-            o = sum(m.filter((p) => p.type == "teacher" && p.refId == t.id));
-          return `<br>• ${E(t.name)}: مستحق ${((i * pct()) / 100).toFixed(0)} ₪ | مصروف ${o} ₪`;
-        }).join("");
+        const tr = db.teachers
+          .map((t) => {
+            const ids = db.students
+                .filter((s) => s.teacherId == t.id)
+                .map((s) => s.id),
+              i = sum(
+                m.filter((p) => p.type == "student" && ids.includes(p.refId)),
+              ),
+              o = sum(m.filter((p) => p.type == "teacher" && p.refId == t.id));
+            return `<br>• ${E(t.name)}: مستحق ${((i * pct()) / 100).toFixed(0)} ₪ | مصروف ${o} ₪`;
+          })
+          .join("");
 
-        const un = db.students.map((s) => ({ s, r: N(s.price) - paidS(s.id) })).filter((x) => x.r > 0).map((x) => `<br>• ${E(x.s.name)} (${E(x.s.track)}) — متبقي: ${x.r} ₪ ${x.s.parent ? `<a href="tel:${E(x.s.parent)}">📞</a>` : ""}`).join("");
+        const un = db.students
+          .map((s) => ({ s, r: N(s.price) - paidS(s.id) }))
+          .filter((x) => x.r > 0)
+          .map(
+            (x) =>
+              `<br>• ${E(x.s.name)} (${E(x.s.track)}) — متبقي: ${x.r} ₪ ${x.s.parent ? `<a href="tel:${E(x.s.parent)}">📞</a>` : ""}`,
+          )
+          .join("");
 
         return `<div class=c>
           <b>📊 التقرير المالي الشامل (${mo})</b>
           <input class=i type=month value="${mo}" onchange="mo=this.value;render()">
-          إيراد المقبوضات من الطلاب: <b>${iS} ₪</b><br>
-          حصة المعلمين المستحقة (${pct()}%): ${td.toFixed(0)} ₪<br>
-          حصة المركز قبل المصاريف (${100 - pct()}%): ${grossCenter.toFixed(0)} ₪<br>
-          المصروفات التشغيلية للمركز: <b style="color:#dc2626">${mExp} ₪</b><br>
-          صافي أرباح المركز النهائي للشهر: <b style="color:${netCenter >= 0 ? "#059669" : "#dc2626"}">${netCenter.toFixed(0)} ₪</b>
+          <div class=g2><div class=t><small>المقبوضات</small><b>${iS} ₪</b></div><div class=t><small>حصة المعلمين (${pct()}%)</small><b>${td.toFixed(0)} ₪</b></div><div class=t><small>حصة المركز (${100 - pct()}%)</small><b>${grossCenter.toFixed(0)} ₪</b></div><div class=t><small>المصروفات</small><b style="color:#dc2626">${mExp} ₪</b></div></div><div class=net style="background:${netCenter >= 0 ? "#059669" : "#dc2626"}"><small>صافي أرباح المركز</small><b>${netCenter.toFixed(0)} ₪</b></div>
           <br><br><b>المعلمون للشهر:</b>${tr || " —"}
           <br><br><b>طلاب عليهم متبقي:</b>${un || " —"}
         </div>`;
@@ -575,14 +838,17 @@ ${p.note ? `ملاحظة الدفعة: ${p.note}\n` : ""}إجمالي المدف
         }
 
         // فحص وجود الطالب في نفس المادة مسبقاً بالتغاضي عن الأخطاء الإملائية
-        const duplicate = db.students.find((s) => 
-          s.id !== eS && 
-          cleanText(s.name) === cleanText(newName) && 
-          cleanText(s.track) === cleanText(newTrack)
+        const duplicate = db.students.find(
+          (s) =>
+            s.id !== eS &&
+            cleanText(s.name) === cleanText(newName) &&
+            cleanText(s.track) === cleanText(newTrack),
         );
 
         if (duplicate) {
-          const confirmAdd = confirm(`⚠️ تنبيه: الطالب "${newName}" مسجل بالفعل في مادة (${newTrack}) مع المعلم (${tn(duplicate.teacherId)})!\n\nهل تريد تأكيد التسجيل وإضافته مرة أخرى؟`);
+          const confirmAdd = confirm(
+            `⚠️ تنبيه: الطالب "${newName}" مسجل بالفعل في مادة (${newTrack}) مع المعلم (${tn(duplicate.teacherId)})!\n\nهل تريد تأكيد التسجيل وإضافته مرة أخرى؟`,
+          );
           if (!confirmAdd) return false;
         }
 
@@ -597,27 +863,34 @@ ${p.note ? `ملاحظة الدفعة: ${p.note}\n` : ""}إجمالي المدف
           teacherId: newTeacherId,
           price: N(f.p.value),
           parent: f.pp.value.trim(),
-          note: f.nt.value.trim()
+          note: f.nt.value.trim(),
         });
         return false;
       }
 
       function addT(f) {
-        const o = db.teachers.find((t) => t.id == eT) || {}, id = o.id || uid();
+        const o = db.teachers.find((t) => t.id == eT) || {},
+          id = o.id || uid();
         eT = "";
-        op("teachers", { id, name: f.n.value.trim(), phone: f.ph.value.trim(), subject: f.sb.value.trim(), startDate: f.sd.value });
+        op("teachers", {
+          id,
+          name: f.n.value.trim(),
+          phone: f.ph.value.trim(),
+          subject: f.sb.value.trim(),
+          startDate: f.sd.value,
+        });
         return false;
       }
 
       const V = {
         st() {
           const e = db.students.find((s) => s.id == eS) || {};
-          const defaultPrice = e.id ? N(e.price) : (P(e.grade || 1) || P(1));
+          const defaultPrice = e.id ? N(e.price) : P(e.grade || 1) || P(1);
           return `<form class=c onsubmit="return addS(this)">
             <b>${e.id ? "✏️ تعديل بيانات طالب" : "➕ تسجيل طالب جديد"}</b>
             <input class=i name=n required placeholder="اسم الطالب الثلاثي" value="${E(e.name)}">
             <div class=row>
-              <select class=i name=g onchange="if(!'${e.id}') this.form.p.value=P(this.value)">
+              <select class=i name=g onchange="if(!${!!e.id}) this.form.p.value=P(this.value)">
                 ${G.map((g, i) => `<option value=${i + 1}${e.grade == i + 1 ? " selected" : ""}>${g}</option>`).join("")}
               </select>
               <select class=i name=k required>
@@ -642,7 +915,7 @@ ${p.note ? `ملاحظة الدفعة: ${p.note}\n` : ""}إجمالي المدف
             <input class=i name=nt value="${E(e.note)}" placeholder="📝 ملاحظات السعر والاتفاق (خصم إخوة / أقساط)">
             <button class=b>حفظ الطالب</button>${e.id ? ER(0, "eS") : ""}
           </form>
-          <input class=i placeholder="🔍 بحث عن طالب بالاسم، المادة، أو الملاحظة..." oninput="qs=this.value;ls.innerHTML=SL()">
+          <input class=i value="${E(qs)}" placeholder="🔍 بحث عن طالب بالاسم، المادة، أو الملاحظة..." oninput="qs=this.value;ls.innerHTML=SL()">
           <div id=ls>${SL()}</div>`;
         },
 
@@ -658,13 +931,14 @@ ${p.note ? `ملاحظة الدفعة: ${p.note}\n` : ""}إجمالي المدف
             <label><small>تاريخ بدء عمل المعلم في المركز:</small><input class=i name=sd type=date value="${e.startDate || today()}"></label>
             <button class=b>حفظ المعلم</button>${e.id ? ER(0, "eT") : ""}
           </form>
-          <input class=i placeholder="🔍 بحث عن معلم..." oninput="qs=this.value;ls.innerHTML=TL()">
+          <input class=i value="${E(qs)}" placeholder="🔍 بحث عن معلم..." oninput="qs=this.value;ls.innerHTML=TL()">
           <div id=ls>${TL()}</div>`;
         },
 
         sc() {
           const dur = durationMins();
-          return `<form class=c onsubmit="return addC(this)">
+          return (
+            `<form class=c onsubmit="return addC(this)">
             <b>🗓 إضافة حصة لجدول المركز</b>
             <select class=i name=t required>${TO()}</select>
             <div class=row>
@@ -679,12 +953,17 @@ ${p.note ? `ملاحظة الدفعة: ${p.note}\n` : ""}إجمالي المدف
             <button class=b>حفظ الحصة بالجدول</button>
           </form>
           <div class=c style="background:#e0f2fe;color:#0369a1">⏱ مدة الحصة بالنظام: <b>${dur} دقيقة</b> | عرض الحصص بنظام 12 ساعة</div>` +
-          D.map((d) => {
-            const l = db.schedule.filter((x) => x.day == d).sort((a, b) => String(a.startTime).localeCompare(b.startTime));
-            return l.length ? `<div class=c><b class=k style="font-size:14px">📍 ${d}</b>` + l.map((x) => {
-              const start12 = format12h(x.startTime);
-              const end12 = format12h(calcEndTime(x.startTime, dur));
-              return `<div style="border-bottom:1px solid #f1f5f9;padding:8px 0">
+            D.map((d) => {
+              const l = db.schedule
+                .filter((x) => x.day == d)
+                .sort((a, b) => String(a.startTime).localeCompare(b.startTime));
+              return l.length
+                ? `<div class=c><b class=k style="font-size:14px">📍 ${d}</b>` +
+                    l
+                      .map((x) => {
+                        const start12 = format12h(x.startTime);
+                        const end12 = format12h(calcEndTime(x.startTime, dur));
+                        return `<div style="border-bottom:1px solid #f1f5f9;padding:8px 0">
               🕒 <span class="time-badge">${start12} - ${end12}</span> — <b>${E(tn(x.teacherId))}</b> (${G[(x.grade || 1) - 1]})
               ${x.note ? `<br><small>📝 ${E(x.note)}</small>` : ""}
               <div style="margin-top:6px">
@@ -692,34 +971,53 @@ ${p.note ? `ملاحظة الدفعة: ${p.note}\n` : ""}إجمالي المدف
                 <button class="b s r" onclick="del('schedule','${x.id}')">حذف الحصة</button>
               </div>
             </div>`;
-            }).join("") + "</div>" : "";
-          }).join("");
+                      })
+                      .join("") +
+                    "</div>"
+                : "";
+            }).join("")
+          );
         },
 
         pa() {
-          const mExp = sum(db.expenses.filter((x) => String(x.date).startsWith(mo)));
+          const mExp = sum(
+            db.expenses.filter((x) => String(x.date).startsWith(mo)),
+          );
 
-          const studentLedger = db.students.filter((s) => {
-            const matchesSearch = (cleanText(s.name) + cleanText(s.parent) + cleanText(s.note) + cleanText(s.track)).includes(cleanText(pq));
-            const p = paidS(s.id);
-            const rem = N(s.price) - p;
-            if (pFilter == "rem") return matchesSearch && rem > 0;
-            if (pFilter == "done") return matchesSearch && rem <= 0;
-            return matchesSearch;
-          }).map((s) => {
-            const pList = studentPayments(s.id);
-            const totalPaid = sum(pList);
-            const rem = N(s.price) - totalPaid;
+          const studentLedger = db.students
+            .filter((s) => {
+              const matchesSearch = (
+                cleanText(s.name) +
+                cleanText(s.parent) +
+                cleanText(s.note) +
+                cleanText(s.track)
+              ).includes(cleanText(pq));
+              const p = paidS(s.id);
+              const rem = N(s.price) - p;
+              if (pFilter == "rem") return matchesSearch && rem > 0;
+              if (pFilter == "done") return matchesSearch && rem <= 0;
+              return matchesSearch;
+            })
+            .map((s) => {
+              const pList = studentPayments(s.id);
+              const totalPaid = sum(pList);
+              const rem = N(s.price) - totalPaid;
 
-            const historyHtml = pList.length ? pList.map((p) => `<div class="pay-item">
+              const historyHtml = pList.length
+                ? pList
+                    .map(
+                      (p) => `<div class="pay-item">
               <span>📅 <b>${E(p.date)}</b> — <b style="color:#059669">${N(p.amount)} ₪</b> <span class="method-tag">${E(p.method || "كاش")}</span> ${p.note ? `<small>(${E(p.note)})</small>` : ""}</span>
               <div>
                 <button class="b s g" onclick="rc('${p.id}')">🧾 إيصال</button>
                 <button class="b s r" onclick="del('payments','${p.id}')">✕</button>
               </div>
-            </div>`).join("") : `<div style="color:#94a3b8;font-size:11px">لا توجد دفعات مسجلة بعد</div>`;
+            </div>`,
+                    )
+                    .join("")
+                : `<div style="color:#94a3b8;font-size:11px">لا توجد دفعات مسجلة بعد</div>`;
 
-            return `<div class=c>
+              return `<div class=c>
               <div style="display:flex;justify-content:space-between;align-items:start">
                 <div><span class=k style="font-size:15px">${E(s.name)}</span> <small>(${G[(s.grade || 1) - 1] || ""} - <span class="method-tag">${E(s.track)}</span>)</small></div>
                 <button class="b s g" onclick="payModal('student','${s.id}')">+ تسجيل دفعة</button>
@@ -731,12 +1029,18 @@ ${p.note ? `ملاحظة الدفعة: ${p.note}\n` : ""}إجمالي المدف
                 ${historyHtml}
               </div>
             </div>`;
-          }).join("");
+            })
+            .join("");
 
-          const expensesList = db.expenses.filter((x) => String(x.date).startsWith(mo)).map((x) => `<div class="pay-item">
+          const expensesList = db.expenses
+            .filter((x) => String(x.date).startsWith(mo))
+            .map(
+              (x) => `<div class="pay-item">
             <span>📅 <b>${E(x.date)}</b> — ${E(x.title)} (${E(x.category)}): <b style="color:#dc2626">${N(x.amount)} ₪</b> ${x.note ? `<small>(${E(x.note)})</small>` : ""}</span>
             <button class="b s r" onclick="del('expenses','${x.id}')">✕</button>
-          </div>`).join("");
+          </div>`,
+            )
+            .join("");
 
           return `<div id=rp>${rep()}</div>
           <form class=c onsubmit="return addExpense(this)">
@@ -759,28 +1063,68 @@ ${p.note ? `ملاحظة الدفعة: ${p.note}\n` : ""}إجمالي المدف
               <button class="b s ${pFilter == "done" ? "g" : ""}" onclick="pFilter='done';render()">خالصين</button>
             </div>
           </div>
-          <div>${studentLedger || '<div class=c>لا يوجد طلاب مطابقين</div>'}</div>`;
+          <div>${studentLedger || "<div class=c>لا يوجد طلاب مطابقين</div>"}</div>`;
         },
 
         se() {
-          return `<form class=c onsubmit="return saveSet(this)">
+          return (
+            `<form class=c onsubmit="return saveSet(this)">
             <b>⚙️ إعدادات النظام وتوزيع النسب</b>
             <label><small>نسبة المعلم %:</small><input class=i name=pct type=number min=0 max=100 value="${pct()}" oninput="ap.textContent=100-this.value"></label>
             <small>حصة المركز تلقائياً: <span id=ap>${100 - pct()}</span>%</small>
             <br><br>
             <label><small>⏱ مدة الحصة الافتراضية (بالدقائق):</small><input class=i name=duration type=number min=15 max=240 value="${durationMins()}"></label>
             <br><br><b>📌 التسعيرة الافتراضية لكل صف (شيكل)</b>` +
-          G.map((g, i) => `<label style="display:block;margin-bottom:4px"><small><b>${g}:</b></small><input class=i name=p${i + 1} type=number min=0 value="${P(i + 1)}"></label>`).join("") +
-          `<br><button class=b>حفظ الإعدادات</button></form>`;
+            G.map(
+              (g, i) =>
+                `<label style="display:block;margin-bottom:4px"><small><b>${g}:</b></small><input class=i name=p${i + 1} type=number min=0 value="${P(i + 1)}"></label>`,
+            ).join("") +
+            `<br><button class=b>حفظ الإعدادات</button></form>`
+          );
         },
       };
 
       function render() {
-        nv.innerHTML = TABS.map((t) => `<button class="${t[0] == tab ? "on" : ""}" onclick="tab='${t[0]}';qs='';eS='';eT='';render()">${t[1]}</button>`).join("");
-        if (!document.activeElement || !/INPUT|SELECT/.test(document.activeElement.tagName) || document.activeElement.form == null) {
+        nv.innerHTML = TABS.map((t) => {
+          const [i, ...l] = t[1].split(" ");
+          return `<button class="${t[0] == tab ? "on" : ""}" onclick="tab='${t[0]}';qs='';eS='';eT='';render();scrollTo(0,0)"><b>${i}</b>${l.join(" ")}</button>`;
+        }).join("");
+        const ae = document.activeElement,
+          ph = ae && ae.placeholder && !ae.form ? ae.placeholder : "",
+          pos = ph ? ae.selectionStart : 0;
+        if (!ae || !/INPUT|SELECT/.test(ae.tagName) || ae.form == null) {
           v.innerHTML = V[tab]();
+          if (ph) {
+            const n = [...v.querySelectorAll("input")].find(
+              (x) => x.placeholder == ph,
+            );
+            if (n) {
+              n.focus();
+              try {
+                n.setSelectionRange(pos, pos);
+              } catch (e) {}
+            }
+          }
         }
       }
+
+      let tm;
+      window.alert = (m) => {
+        tt.textContent = m;
+        tt.classList.add("on");
+        clearTimeout(tm);
+        tm = setTimeout(() => tt.classList.remove("on"), 2500 + m.length * 30);
+      };
+      md.onclick = (e) => {
+        if (e.target === md) md.style.display = "none";
+      };
+      const upSt = () => {
+        st.textContent = navigator.onLine ? "🟢 متصل" : "🔴 أوفلاين";
+        st.style.color = navigator.onLine ? "#4ade80" : "#fca5a5";
+      };
+      addEventListener("online", upSt);
+      addEventListener("offline", upSt);
+      upSt();
 
       render();
     </script>
