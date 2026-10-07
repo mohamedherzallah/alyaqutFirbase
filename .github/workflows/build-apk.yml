@@ -27,9 +27,15 @@ jobs:
       - name: Prepare Web Assets
         run: |
           mkdir -p www
-          cp -r ./index.html www/ 2>/dev/null || true
-          cp -r ./code.js www/ 2>/dev/null || true
+          [ -f index.html ] && cp index.html www/ || true
+          cp *.png *.jpg *.jpeg www/ 2>/dev/null || true
 
+      - name: Bundle Firebase SDK
+        run: |
+          B=https://www.gstatic.com/firebasejs/10.8.0
+          curl -fsSLo www/fb-app.js $B/firebase-app-compat.js
+          curl -fsSLo www/fb-fs.js $B/firebase-firestore-compat.js
+          sed -i "s#$B/firebase-app-compat.js#fb-app.js#; s#$B/firebase-firestore-compat.js#fb-fs.js#" www/index.html
       # 2. تثبيت Capacitor وإضافة منصة أندرويد
       - name: Install Capacitor & Setup Android
         run: |
