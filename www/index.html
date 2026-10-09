@@ -76,6 +76,7 @@
       const TABS = [
         ["st", "👨‍🎓 الطلاب"],
         ["te", "👩‍🏫 المعلمون"],
+        ["at", "📋 الحضور"],
         ["sc", "🗓 الجدول"],
         ["pa", "💰 المالية"],
         ["se", "⚙️ إعدادات"],
@@ -203,16 +204,26 @@
 
       const ER = (v, k) => `<button type=button class="b s r" onclick="${k}='';render()">إلغاء</button>`;
 
+      const WD = { smw: [6, 1, 3], stt: [0, 2, 4] }, DY = { smw: "سبت-اثنين-أربعاء", stt: "أحد-ثلاثاء-خميس" }, D7 = ["الأحد", "الاثنين", "الثلاثاء", "الأربعاء", "الخميس", "الجمعة", "السبت"], ATT = ["حاضر", "متأخر"];
+      let adt = today();
+      const dow = (d) => new Date(d + "T12:00:00").getDay(), pk = (g) => g.pkg || g.id;
+      const attOf = (g) => db.attendance.filter((a) => a.pk == pk(g) && a.date >= (g.startDate || "9")).sort((x, y) => x.date.localeCompare(y.date));
+      const doneN = (g) => attOf(g).filter((a) => ATT.includes(a.status)).length;
+      function lastDate(g) { let n = 12 - doneN(g); if (n <= 0) return ""; const d = new Date((g.startDate > today() ? g.startDate : today()) + "T12:00:00"); for (let i = 0; i < 400; i++) { if (WD[g.days || "smw"].includes(d.getDay()) && --n <= 0) return d.toISOString().slice(0, 10); d.setDate(d.getDate() + 1); } return ""; }
+      function mark(k, s2) { if (!k) return alert("اختر طالباً"); const r = db.attendance.find((a) => a.pk == k && a.date == adt); if (r && r.status == s2) return op("attendance", r.id, 1); op("attendance", { id: r ? r.id : uid(), pk: k, date: adt, status: s2 }); }
+      function renew(k) { const d = prompt("تاريخ بدء الاشتراك الجديد (yyyy-mm-dd):", today()); if (/^\d{4}-\d\d-\d\d$/.test(d || "")) db.students.filter((s) => (s.pkg || s.id) == k).forEach((m) => op("students", { ...m, startDate: d })); }
+
       const SG = () => { const m = {}; db.students.forEach((s) => (m[s.pkg || s.id] = m[s.pkg || s.id] || []).push(s)); return Object.values(m).map((ms) => { const L = ms.find((x) => N(x.price) > 0) || ms[0]; return { ...L, ms, price: ms.reduce((a, x) => a + N(x.price), 0), track: ms.map((x) => x.track).join(" + ") }; }); };
       const delG = (k) => confirm("حذف كل مواد هذا الطالب؟") && db.students.filter((s) => (s.pkg || s.id) == k).forEach((s) => op("students", s.id, 1));
       function ac(f) { const s = db.students.find((x) => cleanText(x.name) == cleanText(f.n.value)); if (s && !eS) { f.g.value = s.grade; f.pp.value = s.parent || ""; } }
       const SL = () => SG().filter((s) => cleanText(s.ms.map((x) => x.name).join() + (s.parent || "") + (s.note || "") + s.track).includes(cleanText(qs))).reverse().map((s) => {
-        const p = paidS(s.id), r = s.price - p, ab = db.attendance.filter((a) => s.ms.some((x) => x.id == a.studentId) && a.status == "غائب").length;
+        const p = paidS(s.id), r = s.price - p, ab = attOf(s).filter((a) => a.status == "غائب").length;
         return `<div class=c><span class=k style="font-size:15px">${E(s.name)}</span> <small>${G[(s.grade || 1) - 1] || ""}</small> ${s.parent ? `<a href="tel:${E(s.parent)}">📞</a>` : ""}
           ${s.ms.map((m) => `<br><span class=method-tag>${E(m.track)}</span> <small>${E(tn(m.teacherId))}</small> <a href="#" onclick="eS='${m.id}';scrollTo(0,0);render();return false">✏️</a>`).join("")}
           <br>الباقة: <b>${s.price} ₪</b> | مدفوع: ${p} ₪ | <b style="color:${r > 0 ? "#dc2626" : "#059669"}">متبقي: ${r} ₪</b>${ab ? ` | غياب: ${ab}` : ""}
           ${s.note ? `<div class="badge-note">📝 ${E(s.note)}</div>` : ""}
-          <div><button class="b s g" onclick="payModal('student','${s.id}')">+ دفعة</button><button class="b s r" onclick="delG('${s.pkg || s.id}')">حذف</button></div></div>`;
+          ${s.startDate ? `<br>📅 ${DY[s.days || "smw"]} | بدأ ${s.startDate} | <b>الحصص ${doneN(s)}/12</b>${doneN(s) >= 12 ? " ⚠️ يلزم التجديد" : lastDate(s) ? ` | آخر حصة متوقعة ${lastDate(s)}` : ""}<details><summary>سجل الحضور (${attOf(s).length})</summary>${attOf(s).map((a) => `${a.date} ${D7[dow(a.date)]} — ${a.status}`).join("<br>") || "—"}</details>` : "<br><small>⚠️ لا يوجد تاريخ بدء — اضغط ✏️ وحدّده</small>"}
+          <div><button class="b s" onclick="renew('${pk(s)}')">🔄 تجديد</button><button class="b s g" onclick="payModal('student','${s.id}')">+ دفعة</button><button class="b s r" onclick="delG('${s.pkg || s.id}')">حذف</button></div></div>`;
       }).join("");
 
       const TL = () => db.teachers.filter((t) => (cleanText(t.name) + cleanText(t.subject)).includes(cleanText(qs))).map((t) => {
@@ -354,7 +365,7 @@ ${p.note ? `ملاحظة الدفعة: ${p.note}\n` : ""}إجمالي المدف
         const nm = f.n.value.trim(), o = db.students.find((s) => s.id == eS) || {};
         const dup = rs.find((r) => db.students.find((s) => s.id !== eS && cleanText(s.name) == cleanText(nm) && cleanText(s.track) == cleanText(r[0])));
         if (dup && !confirm(`الطالب "${nm}" مسجل بالفعل في ${dup[0]}. تسجيله مرة أخرى؟`)) return false;
-        const pkg = o.pkg || uid(), base = { name: nm, grade: f.g.value, parent: f.pp.value.trim(), note: f.nt.value.trim() }; eS = "";
+        const pkg = o.pkg || uid(), base = { name: nm, grade: f.g.value, parent: f.pp.value.trim(), note: f.nt.value.trim(), startDate: f.sd.value, days: f.dy.value }; eS = "";
         rs.forEach((r, i) => op("students", { ...base, id: o.id || uid(), date: o.date || today(), pkg, track: r[0], teacherId: r[1], price: o.id ? N(f.p.value) : i ? 0 : N(f.p.value) }));
         return false;
       }
@@ -375,12 +386,23 @@ ${p.note ? `ملاحظة الدفعة: ${p.note}\n` : ""}إجمالي المدف
             <div class=row><select class=i name=g onchange="if(!${!!e.id})this.form.p.value=P(this.value)">${G.map((g, i) => `<option value=${i + 1}${e.grade == i + 1 ? " selected" : ""}>${g}</option>`).join("")}</select><input class=i name=pp value="${E(e.parent)}" placeholder="هاتف ولي الأمر"></div>
             <div id=rws>${rowH(e.track || "", e.teacherId || "")}</div>
             ${e.id ? "" : `<button type=button class="b s" onclick="rws.insertAdjacentHTML('beforeend',rowH('',''))">+ مادة أخرى</button>`}
+            <small>بدء الاشتراك وأيام الحصص</small><div class=row><input class=i type=date name=sd value="${e.startDate || today()}"><select class=i name=dy><option value=smw${e.days == "stt" ? "" : " selected"}>سبت-اثنين-أربعاء</option><option value=stt${e.days == "stt" ? " selected" : ""}>أحد-ثلاثاء-خميس</option></select></div>
             <input class=i name=p type=number min=0 value="${e.id ? N(e.price) : P(1)}" placeholder="السعر الإجمالي للباقة (شيكل)" style="margin-top:8px">
             <input class=i name=nt value="${E(e.note)}" placeholder="📝 ملاحظات السعر والاتفاق">
             <button class=b>حفظ</button>${e.id ? ER(0, "eS") : ""}
           </form>
           <input class=i value="${E(qs)}" placeholder="🔍 بحث عن طالب" oninput="qs=this.value;ls.innerHTML=SL()">
           <div id=ls>${SL()}</div>`;
+        },
+
+        at() {
+          const d = adt, gs = SG().filter((g) => g.startDate && g.startDate <= d), rec = (g) => db.attendance.find((a) => a.pk == pk(g) && a.date == d);
+          const exp = gs.filter((g) => rec(g) || (WD[g.days || "smw"].includes(dow(d)) && doneN(g) < 12)), others = gs.filter((g) => !exp.includes(g)), nos = SG().filter((g) => !g.startDate).length;
+          return `<div class=c><b>📋 كشف الحضور اليومي</b><input class=i type=date value="${d}" onchange="adt=this.value;render()"><b class=k>${D7[dow(d)]}</b> <small>${exp.length} طالب متوقع</small>${nos ? `<div class=badge-note>⚠️ ${nos} طالب بلا تاريخ بدء (عدّلهم من تبويب الطلاب)</div>` : ""}</div>` +
+            exp.map((g) => { const r = rec(g), n = doneN(g), cur = r ? r.status : "";
+              return `<div class=c><span class=k>${E(g.name)}</span> <small>${G[(g.grade || 1) - 1] || ""} · ${E(g.track)}</small><br><small>الحصة ${Math.min(n + (r && ATT.includes(r.status) ? 0 : 1), 12)} من 12</small>${n >= 12 && !r ? '<div class=badge-note>انتهت الحصص الـ12 — يلزم التجديد</div>' : ""}
+              <div>${["حاضر", "متأخر", "غائب", "بعذر"].map((x) => `<button class="b s${cur == x ? (x == "غائب" ? " r" : " g") : ""}" onclick="mark('${pk(g)}','${x}')">${x}</button>`).join("")}</div></div>`; }).join("") +
+            `<div class=c><b>➕ حضور استثنائي (يوم غير معتاد)</b><select class=i id=ex><option value="">— اختر طالباً —</option>${others.map((g) => `<option value="${pk(g)}">${E(g.name)}</option>`).join("")}</select><button class="b s g" onclick="mark(ex.value,'حاضر')">تسجيل حضور</button></div>`;
         },
 
         te() {
@@ -426,7 +448,7 @@ ${p.note ? `ملاحظة الدفعة: ${p.note}\n` : ""}إجمالي المدف
               🕒 <span class="time-badge">${start12} - ${end12}</span> — <b>${E(tn(x.teacherId))}</b> ${E(x.track || "")} (${G[(x.grade || 1) - 1]})
               ${x.note ? `<br><small>📝 ${E(x.note)}</small>` : ""}
               <div style="margin-top:6px">
-                <button class="b s g" onclick="openAttendance('${x.id}')">📋 كشف الحضور</button>
+                
                 <button class="b s r" onclick="del('schedule','${x.id}')">حذف الحصة</button>
               </div>
             </div>`;
