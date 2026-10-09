@@ -43,6 +43,7 @@ jobs:
           npm install @capacitor/core@6 @capacitor/cli@6 @capacitor/android@6
           npx cap init "Al-Yaqout" com.yaqout.center --web-dir www
           npx cap add android
+                    npx @capacitor/assets generate --android --iconBackgroundColor '#003366' --iconBackgroundColorDark '#003366'
           npx cap sync android
 
       # 3. قبول تراخيص Android SDK وبناء ملف APK
