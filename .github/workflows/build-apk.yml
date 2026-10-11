@@ -9,54 +9,47 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
+      - uses: actions/setup-node@v4
         with:
           node-version: '20'
 
-      - name: Setup Java JDK
-        uses: actions/setup-java@v4
+      - uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
           java-version: '17'
 
-      # 1. نقل ملفات الموقع (index.html والملفات المجاورة) إلى مجلد www
-      - name: Prepare Web Assets
-        run: |
-          mkdir -p www
-          [ -f index.html ] && cp index.html www/ || true
-          cp *.png *.jpg *.jpeg www/ 2>/dev/null || true
+      - name: Accept Android SDK licenses
+        run: yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses || true
 
+      # Bundle Firebase inside the APK so the app opens offline
       - name: Bundle Firebase SDK
         run: |
           B=https://www.gstatic.com/firebasejs/10.8.0
           curl -fsSLo www/fb-app.js $B/firebase-app-compat.js
           curl -fsSLo www/fb-fs.js $B/firebase-firestore-compat.js
           sed -i "s#$B/firebase-app-compat.js#fb-app.js#; s#$B/firebase-firestore-compat.js#fb-fs.js#" www/index.html
-      # 2. تثبيت Capacitor وإضافة منصة أندرويد
-      - name: Install Capacitor & Setup Android
+
+      - name: Install Capacitor
         run: |
           npm init -y
           npm install @capacitor/core@6 @capacitor/cli@6 @capacitor/android@6
+
+      - name: Create Android project
+        run: |
           npx cap init "Al-Yaqout" com.yaqout.center --web-dir www
           npx cap add android
-                    npx @capacitor/assets generate --android --iconBackgroundColor '#003366' --iconBackgroundColorDark '#003366'
+          npx --yes @capacitor/assets generate --android --iconBackgroundColor '#FFFFFF' --iconBackgroundColorDark '#FFFFFF'
           npx cap sync android
 
-      # 3. قبول تراخيص Android SDK وبناء ملف APK
       - name: Build Debug APK
         working-directory: ./android
         run: |
-          yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses || true
           chmod +x gradlew
           ./gradlew assembleDebug --no-daemon
 
-      # 4. رفع ملف الـ APK الجاهز للتنزيل
-      - name: Upload APK
-        uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v4
         with:
           name: YaqoutCenter-APK
           path: android/app/build/outputs/apk/debug/app-debug.apk
