@@ -68,7 +68,7 @@
       // تهيئة اتصال Firebase مع تفعيل العمل بدون إنترنت (Offline Sync)
       firebase.initializeApp(firebaseConfig);
       const fs = firebase.firestore();
-      fs.enablePersistence({ synchronizeTabs: true }).catch(() => {});
+      fs.enablePersistence({ synchronizeTabs: true }).catch(() => { window.noOff = 1; });
 
       const G = [...Array(12)].map((_, i) => "الصف " + (i + 1));
       const D = ["سبت,اثنين,اربعاء", "أحد,ثلاثاء,خميس", "السبت", "الأحد", "الاثنين", "الثلاثاء", "الأربعاء", "الخميس", "الجمعة"];
@@ -166,7 +166,7 @@
         }
       }
 
-      const del = (t, id) => confirm("تأكيد الحذف؟") && op(t, id, 1);
+      const del = (t, id) => confirm(t == "payments" ? "حذف هذه الدفعة سينقص المقبوضات ويزيد المتبقي على الطالب. متابعة؟" : "تأكيد الحذف؟") && op(t, id, 1);
 
       // إضافة حصة للجدول مع منع التداخل لأي معلم في نفس اليوم
             const SUBJ = ["تأسيس عربي", "تأسيس رياضيات", "تأسيس انجليزي", "رياضيات", "عربي", "انجليزي", "علوم", "دين"];
@@ -210,7 +210,7 @@
       const attOf = (g) => db.attendance.filter((a) => a.eid == g.id && a.date >= (g.startDate || "9")).sort((x, y) => x.date.localeCompare(y.date));
       const doneN = (g) => attOf(g).filter((a) => ATT.includes(a.status)).length;
       function lastDate(g) { let n = 12 - doneN(g); if (n <= 0) return ""; const d = new Date((g.startDate > today() ? g.startDate : today()) + "T12:00:00"); for (let i = 0; i < 400; i++) { if (WD[g.days || "smw"].includes(d.getDay()) && --n <= 0) return d.toISOString().slice(0, 10); d.setDate(d.getDate() + 1); } return ""; }
-      function mark(k, s2) { if (!k) return alert("اختر طالباً"); const r = db.attendance.find((a) => a.eid == k && a.date == adt); if (r && r.status == s2) return op("attendance", r.id, 1); op("attendance", { id: r ? r.id : uid(), eid: k, date: adt, status: s2 }); }
+      function mark(k, s2) { if (!k) return alert("اختر طالباً"); const r = db.attendance.find((a) => a.eid == k && a.date == adt); if (r && r.status == s2) return op("attendance", r.id, 1); op("attendance", { id: r ? r.id : k + "_" + adt, eid: k, date: adt, status: s2 }); }
       function editM(id) {
         const m = db.students.find((x) => x.id == id); if (!m) return;
         md.style.display = "block";
@@ -227,7 +227,7 @@
       function renew(k) { const m = db.students.find((x) => x.id == k), d = prompt("تاريخ بدء الدورة الجديدة لمادة " + m.track + " (yyyy-mm-dd):", today()); if (/^\d{4}-\d\d-\d\d$/.test(d || "")) op("students", { ...m, startDate: d }); }
 
       const SG = () => { const m = {}; db.students.forEach((s) => (m[s.pkg || s.id] = m[s.pkg || s.id] || []).push(s)); return Object.values(m).map((ms) => { const L = ms.find((x) => N(x.price) > 0) || ms[0]; return { ...L, ms, price: ms.reduce((a, x) => a + N(x.price), 0), track: ms.map((x) => x.track).join(" + ") }; }); };
-      const delG = (k) => confirm("حذف كل مواد هذا الطالب؟") && db.students.filter((s) => (s.pkg || s.id) == k).forEach((s) => op("students", s.id, 1));
+      const delG = (k) => { const ms = db.students.filter((s) => (s.pkg || s.id) == k), ids = ms.map((s) => s.id), ps = db.payments.filter((p) => p.type == "student" && ids.includes(p.refId)); if (!confirm("حذف الطالب وكل مواده" + (ps.length ? " وكل دفعاته (" + ps.length + " دفعة بمجموع " + sum(ps) + " ₪)" : "") + "؟ لا يمكن التراجع.")) return; ps.forEach((p) => op("payments", p.id, 1)); db.attendance.filter((a) => ids.includes(a.eid)).forEach((a) => op("attendance", a.id, 1)); ms.forEach((x) => op("students", x.id, 1)); };
       function ac(f) { const s = db.students.find((x) => cleanText(x.name) == cleanText(f.n.value)); if (s && !eS) { f.g.value = s.grade; f.pp.value = s.parent || ""; } }
       const SL = () => SG().filter((s) => cleanText(s.ms.map((x) => x.name).join() + (s.parent || "") + (s.note || "") + s.track).includes(cleanText(qs))).reverse().map((s) => {
         const p = paidS(s.id), r = s.price - p, ab = s.ms.reduce((t, m) => t + attOf(m).filter((a) => a.status == "غائب").length, 0);
@@ -563,7 +563,7 @@ ${p.note ? `ملاحظة الدفعة: ${p.note}\n` : ""}إجمالي المدف
       let tm;
       window.alert = (m) => { tt.textContent = m; tt.classList.add("on"); clearTimeout(tm); tm = setTimeout(() => tt.classList.remove("on"), 2500 + m.length * 30); };
       md.onclick = (e) => { if (e.target === md) md.style.display = "none"; };
-      const upSt = () => { const off = !navigator.onLine, pend = Object.values(PW).some(Boolean); st.textContent = off ? "🔴 أوفلاين" + (pend ? " — بيانات بانتظار المزامنة" : "") : pend ? "🟡 جارٍ المزامنة..." : ""; st.style.color = off ? "#fca5a5" : "#fde68a"; };
+      const upSt = () => { const off = !navigator.onLine, pend = Object.values(PW).some(Boolean); st.textContent = off ? "🔴 أوفلاين" + (pend ? " — بيانات بانتظار المزامنة" : "") : pend ? "🟡 جارٍ المزامنة..." : window.noOff ? "⚠️ بدون حفظ أوفلاين" : ""; st.style.color = off ? "#fca5a5" : "#fde68a"; };
       addEventListener("online", upSt); addEventListener("offline", upSt); upSt();
 
       render();
